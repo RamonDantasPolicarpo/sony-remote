@@ -35,4 +35,13 @@ object SonyCodes {
     const val BACK = 0x63    // Return / Voltar
     const val INPUT = 0x25   // troca de entrada (TV/Video, HDMI)
     const val DISPLAY = 0x3A // informações na tela
+
+    // --- mídia / transporte (testar) ---
+    // Códigos de reprodução para linha Bravia. Se algum não responder na sua TV,
+    // troque o número por outro do conjunto Sony e recompile.
+    const val PLAY = 0x4B    // ▶ reproduzir
+    const val PAUSE = 0x39   // ⏸ pausar
+    const val STOP = 0x18    // ⏹ parar
+    const val REWIND = 0x1B  // ⏪ retroceder
+    const val FORWARD = 0x1C // ⏩ avançar
 }

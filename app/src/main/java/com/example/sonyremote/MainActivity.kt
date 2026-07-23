@@ -1,13 +1,17 @@
 package com.example.sonyremote
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -22,6 +26,13 @@ import android.widget.Toast
  * ficar com o menor número possível de peças que poderiam quebrar no build.
  */
 class MainActivity : Activity() {
+
+    private companion object {
+        // Espera antes de começar a repetir ao segurar o botão.
+        const val REPEAT_INITIAL_DELAY_MS = 400L
+        // Intervalo entre repetições enquanto o botão fica segurado.
+        const val REPEAT_INTERVAL_MS = 250L
+    }
 
     private lateinit var ir: SircTransmitter
 
@@ -76,28 +87,44 @@ class MainActivity : Activity() {
 
         root.addView(spacer())
 
-        // Volume e Canal
+        // Botões de mídia
         root.addView(row(
-            btn("VOL +", SonyCodes.VOL_UP),
-            btn("CH +", SonyCodes.CH_UP)
+            btn("⏪", SonyCodes.REWIND),
+            btn("▶", SonyCodes.PLAY, "#2D7DD2"),
+            btn("⏸", SonyCodes.PAUSE),
+            btn("⏹", SonyCodes.STOP),
+            btn("⏩", SonyCodes.FORWARD)
+        ))
+
+        root.addView(spacer())
+
+        // Volume e Canal — seguram para repetir (auto-repeat).
+        root.addView(row(
+            btn("VOL +", SonyCodes.VOL_UP, repeatable = true),
+            btn("CH +", SonyCodes.CH_UP, repeatable = true)
         ))
         root.addView(row(
-            btn("VOL −", SonyCodes.VOL_DOWN),
-            btn("CH −", SonyCodes.CH_DOWN)
+            btn("VOL −", SonyCodes.VOL_DOWN, repeatable = true),
+            btn("CH −", SonyCodes.CH_DOWN, repeatable = true)
         ))
 
         setContentView(root)
     }
 
     /** Cria um botão de TEXTO que envia [command] ao ser tocado. */
-    private fun btn(label: String, command: Int, colorHex: String = "#1E2833"): Button {
+    private fun btn(
+        label: String,
+        command: Int,
+        colorHex: String = "#1E2833",
+        repeatable: Boolean = false
+    ): Button {
         return Button(this).apply {
             text = label
             textSize = 18f
             setTextColor(Color.WHITE)
             // Remove o contorno/sombra padrão do Button para o canto ficar limpo.
             stateListAnimator = null
-            styleKey(this, command, colorHex)
+            styleKey(this, command, colorHex, repeatable)
         }
     }
 
@@ -108,12 +135,26 @@ class MainActivity : Activity() {
             imageTintList = ColorStateList.valueOf(Color.WHITE)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
             setPadding(dp(18), dp(18), dp(18), dp(18))
-            styleKey(this, command, colorHex)
+            styleKey(this, command, colorHex, repeatable = false)
         }
     }
 
-    /** Aplica o visual comum (fundo arredondado + toque) e a ação de enviar IR. */
-    private fun styleKey(v: View, command: Int, colorHex: String) {
+    /** Envia [command] uma vez, com haptic e aviso caso não haja emissor. */
+    private fun fire(v: View, command: Int) {
+        v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        if (ir.hasEmitter) {
+            ir.send(command, SonyCodes.ADDR_TV)
+        } else {
+            Toast.makeText(this@MainActivity, "Sem emissor IR", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Aplica o visual comum (fundo arredondado + toque) e a ação de enviar IR.
+     * Se [repeatable] for true, segurar o botão repete o comando (para VOL/CH).
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private fun styleKey(v: View, command: Int, colorHex: String, repeatable: Boolean) {
         val base = GradientDrawable().apply {
             setColor(Color.parseColor(colorHex))
             cornerRadius = dp(16).toFloat()
@@ -124,12 +165,33 @@ class MainActivity : Activity() {
         val lp = LinearLayout.LayoutParams(0, dp(64), 1f)
         lp.setMargins(dp(6), dp(6), dp(6), dp(6))
         v.layoutParams = lp
-        v.setOnClickListener {
-            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            if (ir.hasEmitter) {
-                ir.send(command, SonyCodes.ADDR_TV)
-            } else {
-                Toast.makeText(this@MainActivity, "Sem emissor IR", Toast.LENGTH_SHORT).show()
+
+        if (!repeatable) {
+            v.setOnClickListener { fire(it, command) }
+            return
+        }
+
+        // Auto-repeat: dispara ao pressionar e continua enquanto o botão fica segurado.
+        val handler = Handler(Looper.getMainLooper())
+        lateinit var repeater: Runnable
+        repeater = Runnable {
+            fire(v, command)
+            handler.postDelayed(repeater, REPEAT_INTERVAL_MS)
+        }
+        v.setOnTouchListener { view, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    view.isPressed = true
+                    fire(view, command)
+                    handler.postDelayed(repeater, REPEAT_INITIAL_DELAY_MS)
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    view.isPressed = false
+                    handler.removeCallbacks(repeater)
+                    true
+                }
+                else -> false
             }
         }
     }
