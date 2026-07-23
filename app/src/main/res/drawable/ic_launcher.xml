@@ -4,33 +4,23 @@
     <!-- Fundo -->
     <path android:fillColor="#101418" android:pathData="M0,0h48v48h-48z"/>
 
-    <!-- Corpo do controle -->
+    <!-- Corpo do controle (chapado, sem sombra) -->
     <path android:fillColor="#2D7DD2"
         android:pathData="M18,5h12a5,5 0 0 1 5,5v28a5,5 0 0 1 -5,5h-12a5,5 0 0 1 -5,-5v-28a5,5 0 0 1 5,-5z"/>
-    <!-- Brilho lateral -->
-    <path android:fillColor="#4A96E0"
-        android:pathData="M18,5h4a0,0 0 0 1 0,0v38a0,0 0 0 1 0,0h-4a5,5 0 0 1 -5,-5v-28a5,5 0 0 1 5,-5z"/>
 
     <!-- Botão de power -->
     <path android:fillColor="#FF5A5A"
-        android:pathData="M24,10.5m-2.2,0a2.2,2.2 0 1,0 4.4,0a2.2,2.2 0 1,0 -4.4,0"/>
+        android:pathData="M24,11m-2.4,0a2.4,2.4 0 1,0 4.8,0a2.4,2.4 0 1,0 -4.8,0"/>
 
-    <!-- Anel do d-pad -->
+    <!-- D-pad: anel grande e limpo com botão central OK -->
     <path android:fillColor="#1B5A99"
-        android:pathData="M24,24m-7,0a7,7 0 1,0 14,0a7,7 0 1,0 -14,0"/>
-    <!-- Botão central OK -->
+        android:pathData="M24,24m-8,0a8,8 0 1,0 16,0a8,8 0 1,0 -16,0"/>
     <path android:fillColor="#FFFFFF"
-        android:pathData="M24,24m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0"/>
-
-    <!-- Setas do d-pad -->
-    <path android:fillColor="#FFFFFF" android:pathData="M24,17.5l1.6,2.4h-3.2z"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M24,30.5l1.6,-2.4h-3.2z"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M17.5,24l2.4,-1.6v3.2z"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M30.5,24l-2.4,-1.6v3.2z"/>
+        android:pathData="M24,24m-4,0a4,4 0 1,0 8,0a4,4 0 1,0 -8,0"/>
 
     <!-- Botões inferiores -->
     <path android:fillColor="#9BB4C7"
-        android:pathData="M20.5,35.5m-1.3,0a1.3,1.3 0 1,0 2.6,0a1.3,1.3 0 1,0 -2.6,0"/>
+        android:pathData="M20,36m-1.6,0a1.6,1.6 0 1,0 3.2,0a1.6,1.6 0 1,0 -3.2,0"/>
     <path android:fillColor="#9BB4C7"
-        android:pathData="M27.5,35.5m-1.3,0a1.3,1.3 0 1,0 2.6,0a1.3,1.3 0 1,0 -2.6,0"/>
+        android:pathData="M28,36m-1.6,0a1.6,1.6 0 1,0 3.2,0a1.6,1.6 0 1,0 -3.2,0"/>
 </vector>
